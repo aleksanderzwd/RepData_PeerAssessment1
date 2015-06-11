@@ -15,7 +15,8 @@ fast operations on it
 of Graphics  
 - **lubridate** - a package which makes dealing with dates a little easier  
 
-```{r libraries, echo = TRUE, results = "hide", message = FALSE}
+
+```r
 library(data.table)
 library(dplyr)
 library(ggplot2)
@@ -26,7 +27,8 @@ library(lubridate)
 
 Downloading, unpacking, reading and data transformation.
 
-```{r, echo = TRUE}
+
+```r
 activity.data.filename     <- "activity.csv"
 activity.data.zip.filename <- "activity.zip"
 file.url <-
@@ -44,7 +46,6 @@ activity.DT <- fread(activity.data.filename, sep = ",", header = TRUE,
                      verbose = FALSE)
 
 activity.DT <- activity.DT[, date := as.Date(date, format = "%Y-%m-%d")]
-
 ```
 
 ## What is mean total number of steps taken per day?
@@ -52,7 +53,8 @@ activity.DT <- activity.DT[, date := as.Date(date, format = "%Y-%m-%d")]
 Calculation the total number of steps taken per day and making a histogram of 
 the total number of steps taken each day.
 
-```{r, echo = TRUE, fig.width = 10}
+
+```r
 setkey(activity.DT, date)
 
 activity.grouped.by.date.DT <- activity.DT %>%
@@ -79,10 +81,12 @@ median.total.day.steps <-
 print(hist.plot)
 ```
 
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png) 
+
 The mean of the total number of steps taken per day is 
-**`r format(mean.total.day.steps, nsmall = 2)`**.  
+**10766.19**.  
 The median of the total number of steps taken per day is 
-**`r median.total.day.steps`**.
+**10765**.
 
 
 ## What is the average daily activity pattern?
@@ -90,7 +94,8 @@ The median of the total number of steps taken per day is
 Making a time series plot of the 5-minute interval (x-axis) and the average 
 number of steps taken, averaged across all days (y-axis).
 
-```{r, echo = TRUE, fig.width = 10}
+
+```r
 rm(activity.grouped.by.date.DT)
 
 setkey(activity.DT, interval)
@@ -116,11 +121,13 @@ max.avg.interval.rec <-
 print(avg.interval.plot)
 ```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+
 The 5-minute interval 
-**`r max.avg.interval.rec[, .(interval)][[1]]`**, 
+**835**, 
 on average across all the days in the dataset, contains the maximum number of 
 steps. Its value is 
-**`r format(round(max.avg.interval.rec[, .(steps.avg)][[1]], 2), nsmall = 2)`**.
+**206.17**.
 
 
 ## Imputing missing values
@@ -131,17 +138,17 @@ The strategy for missing values of variable **steps**:
 **The missing values are filled with the average value for each interval. The 
 values are next rounded to the nearest integer values**.
 
-```{r, echo = TRUE}
-na.val.number <- sum(is.na(activity.DT$steps))
 
+```r
+na.val.number <- sum(is.na(activity.DT$steps))
 ```
 
-The total number of missing values in the dataset is **`r na.val.number`**.
+The total number of missing values in the dataset is **2304**.
 
 
 Creating a new dataset that is equal to the original dataset but with the missing data filled in.
-```{r, echo = TRUE}
 
+```r
 activity.nafilled.DT <- inner_join(activity.grouped.by.interval.DT, activity.DT,
                                    by = c("interval" = "interval"))
 
@@ -150,11 +157,11 @@ rm(activity.grouped.by.interval.DT)
 activity.nafilled.DT <-
     activity.nafilled.DT[is.na(steps), steps := as.integer(round(steps.avg))]
 activity.nafilled.DT <- activity.nafilled.DT[, steps.avg := NULL]
-
 ```
 
 Making a histogram of the total number of steps taken each day.
-```{r, echo = TRUE, fig.width = 10}
+
+```r
 setkey(activity.nafilled.DT, date)
 
 activity.grouped.by.date.DT <- activity.nafilled.DT %>%
@@ -190,21 +197,23 @@ total.day.steps.diff <- sum(activity.DT$steps, na.rm = TRUE) -
 print(hist.plot)
 ```
 
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
+
 The mean of the total number of steps taken per day after filling NA values is  
-**`r format(mean.total.day.nafilled.steps, nsmall = 2)`**.  
+**10765.64**.  
 The median of the total number of steps taken per day after filling NA values is 
-**`r median.total.day.nafilled.steps`**.
+**10762**.
 
 The difference in the mean of the total number of steps taken per day before and
 after filling NA values is
-**`r format(mean.total.day.steps.diff, nsmall = 2)`**.
+**0.55**.
 
 The difference in the median of the total number of steps taken per day before 
 and after filling NA values is
-**`r median.total.day.steps.diff`**.
+**3**.
 
 The difference of the total daily number of steps taken per day before and
-after filling NA values is **`r total.day.steps.diff`**.
+after filling NA values is **-86096**.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -213,7 +222,8 @@ Creating a new factor variable in the dataset with two levels – “weekday” and
 “weekend” and making a panel plot containing a time series plot of the 5-minute 
 interval (x-axis) and the average number of steps taken, averaged across all 
 weekday days or weekend days (y-axis).
-```{r, echo = TRUE, fig.width = 10}
+
+```r
 activity.nafilled.week.DT <- activity.nafilled.DT %>%
     mutate(day.type =
            as.factor(ifelse(wday(date) %in% c(1, 7), "weekend", "weekday")))
@@ -240,5 +250,7 @@ avg.interval.day.type.plot <-
 
 print(avg.interval.day.type.plot)
 ```
+
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
 
 
